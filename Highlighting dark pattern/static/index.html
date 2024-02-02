@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Dark Pattern Detection</title>
+
+    <style>
+        body {
+            width: 100%;
+            height: 100%;
+            --s: 82px;
+            --c1: #b2b2b2;
+            --c2: #ffffff;
+            --c3: #d9d9d9;
+
+            --_g: var(--c3) 0 120deg, #0000 0;
+            background: conic-gradient(from -60deg at 50% calc(100% / 3), var(--_g)),
+                conic-gradient(from 120deg at 50% calc(200% / 3), var(--_g)),
+                conic-gradient(
+                from 60deg at calc(200% / 3),
+                var(--c3) 60deg,
+                var(--c2) 0 120deg,
+                #0000 0
+                ),
+                conic-gradient(from 180deg at calc(100% / 3), var(--c1) 60deg, var(--_g)),
+                linear-gradient(
+                90deg,
+                var(--c1) calc(100% / 6),
+                var(--c2) 0 50%,
+                var(--c1) 0 calc(500% / 6),
+                var(--c2) 0
+                );
+            background-size: calc(1.732 * var(--s)) var(--s);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            font-size: 5em;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .form-control {
+            position: relative;
+            margin: 15vh 0 0 0;
+            width: 30vw;
+        }
+
+        .form-control input {
+            background-color: transparent;
+            border: 0;
+            border-bottom: 2px #000 solid;
+            display: block;
+            width: 100%;
+            padding: 15px 0;
+            font-size: 18px;
+            color: #000;
+        }
+
+        .form-control input:focus,
+        .form-control input:valid {
+            outline: 0;
+            border-bottom-color: #000;
+        }
+
+        .form-control label {
+            position: absolute;
+            top: 15px;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .form-control label span {
+            display: inline-block;
+            font-size: 18px;
+            min-width: 5px;
+            color: #000;
+            transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .form-control input:focus+label span,
+        .form-control input:valid+label span {
+            color: #000;
+            transform: translateY(-30px);
+        }
+
+        button {
+            border: none;
+            color: #fff;
+            background-image: linear-gradient(30deg, #0400ff, #4ce3f7);
+            border-radius: 20px;
+            background-size: 100% auto;
+            font-family: inherit;
+            font-size: 17px;
+            padding: 0.6em 1.5em;
+            width: 10vw;
+            margin: 3vh 0 0 0;
+        }
+
+        button:hover {
+            background-position: right center;
+            background-size: 200% auto;
+            -webkit-animation: pulse 2s infinite;
+            animation: pulse512 1.5s infinite;
+        }
+
+        @keyframes pulse512 {
+            0% {
+                box-shadow: 0 0 0 0 #05bada66;
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgb(218 103 68 / 0%);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgb(218 103 68 / 0%);
+            }
+        }
+
+        .custum-file-upload {
+            height: 200px;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: space-between;
+            gap: 20px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #000;
+            background-color: transparent;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 5vh;
+        }
+
+        .custum-file-upload .icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .custum-file-upload .icon svg {
+            height: 80px;
+            fill: #000;
+        }
+
+        .custum-file-upload .text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .custum-file-upload .text span {
+            font-weight: 400;
+            color: #e8e8e8;
+        }
+
+        .custum-file-upload input {
+            display: none;
+        }
+
+        #uploadedImage {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: fit-content;
+            width: 100vw;
+        }
+
+        .right-container {
+            display: none;
+            width: 50vw;
+        }
+
+        .left-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 50vw;
+        }
+
+        #uploadedImage img {
+            width: 500px;
+            height: 300px;
+        }
+
+        #result p {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dark Pattern Detection</h1>
+    <div class="container">
+        <div class="left-container">
+            <form action="/predict" method="post">
+
+                <label for="imageInput" class="custum-file-upload">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24" fill="" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M10 1C9.73478 1 9.48043 1.10536 9.29289 1.29289L3.29289 7.29289C3.10536 7.48043 3 7.73478 3 8V20C3 21.6569 4.34315 23 6 23H7C7.55228 23 8 22.5523 8 22C8 21.4477 7.55228 21 7 21H6C5.44772 21 5 20.5523 5 20V9H10C10.5523 9 11 8.55228 11 8V3H18C18.5523 3 19 3.44772 19 4V9C19 9.55228 19.4477 10 20 10C20.5523 10 21 9.55228 21 9V4C21 2.34315 19.6569 1 18 1H10ZM9 7H6.41421L9 4.41421V7ZM14 15.5C14 14.1193 15.1193 13 16.5 13C17.8807 13 19 14.1193 19 15.5V16V17H20C21.1046 17 22 17.8954 22 19C22 20.1046 21.1046 21 20 21H13C11.8954 21 11 20.1046 11 19C11 17.8954 11.8954 17 13 17H14V16V15.5ZM16.5 11C14.142 11 12.2076 12.8136 12.0156 15.122C10.2825 15.5606 9 17.1305 9 19C9 21.2091 10.7909 23 13 23H20C22.2091 23 24 21.2091 24 19C24 17.1305 22.7175 15.5606 20.9844 15.122C20.7924 12.8136 18.858 11 16.5 11Z" fill=""></path> </g></svg>
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" required onchange="displaySelectedImage()">
+                    <button type="button" onclick="extractAndPredict()">Extract & Predict</button>
+                </label>
+
+            </form>
+            <div id="result"></div>
+        </div>
+        <div class="right-container">
+            <div id="uploadedImage"></div>
+        </div>
+    </div>
+
+    <script>
+        async function extractAndPredict() {
+            const imageInput = document.getElementById("imageInput");
+            const resultDiv = document.getElementById("result");
+    
+            const formData = new FormData();
+            formData.append('file', imageInput.files[0]);
+    
+            // Extract text using Tesseract (replace 'extractText' with your actual logic)
+            const extractedText = await extractText(formData);
+    
+            // Make a request to your FastAPI endpoint
+            fetch('http://127.0.0.1:8000/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    text: extractedText,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Append the prediction result
+                resultDiv.innerHTML += `<p>Prediction: ${data.prediction}</p>`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultDiv.innerHTML += `<p>Error occurred.</p>`;
+            });
+        }
+
+        function displaySelectedImage() {
+            const imageInput = document.getElementById("imageInput");
+            const uploadedImageDiv = document.getElementById("uploadedImage");
+            var rightContainer = document.querySelector(".right-container");
+
+            rightContainer.style.display = "block"
+
+            if (imageInput.files && imageInput.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    uploadedImageDiv.innerHTML = `<img src="${e.target.result}" alt="Uploaded Image" style="max-width: 100%;">`;
+                };
+
+                reader.readAsDataURL(imageInput.files[0]);
+            }
+        }
+    
+        async function extractText(formData) {
+            const response = await fetch('http://127.0.0.1:8000/extract', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+            return data.text;
+        }
+    </script>
+    
+</body>
+</html>
